@@ -41,14 +41,17 @@ public static class StandardDeviation {
                 count += 1;
             }
 
-            var avg = total / count;
-            sumSquaredDifferences += Math.Pow(number - avg, 2);
-            countNumbers += 1;
-        }
+            var avg = (double)total / count;
 
-        var variance = sumSquaredDifferences / countNumbers;
-        return Math.Sqrt(variance);
+        sumSquaredDifferences += Math.Pow(number - avg, 2);
+        countNumbers += 1;
+
     }
+
+    var variance = sumSquaredDifferences / countNumbers;
+    return Math.Sqrt(variance);
+
+}
 
     private static double StandardDeviation3(int[] numbers) {
         var count = numbers.Length;
