@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Net.Http;
 using System.Text.Json;
 
 public static class SetsAndMaps
@@ -21,8 +26,37 @@ public static class SetsAndMaps
     /// <param name="words">An array of 2-character words (lowercase, no duplicates)</param>
     public static string[] FindPairs(string[] words)
     {
-        // TODO Problem 1 - ADD YOUR CODE HERE
-        return [];
+        HashSet<string> seen = new HashSet<string>();
+        HashSet<string> pairs = new HashSet<string>();
+
+        foreach (string word in words)
+        {
+            if (string.IsNullOrEmpty(word) || word.Length != 2)
+            {
+                continue;
+            }
+
+            if (word[0] == word[1])
+            {
+                seen.Add(word);
+                continue;
+            }
+
+            string reversed = $"{word[1]}{word[0]}";
+
+            if (seen.Contains(reversed))
+            {
+                string pair = string.CompareOrdinal(word, reversed) < 0
+                    ? $"{word} & {reversed}"
+                    : $"{reversed} & {word}";
+
+                pairs.Add(pair);
+            }
+
+            seen.Add(word);
+        }
+
+        return new List<string>(pairs).ToArray();
     }
 
     /// <summary>
@@ -39,10 +73,26 @@ public static class SetsAndMaps
     public static Dictionary<string, int> SummarizeDegrees(string filename)
     {
         var degrees = new Dictionary<string, int>();
+
         foreach (var line in File.ReadLines(filename))
         {
             var fields = line.Split(",");
-            // TODO Problem 2 - ADD YOUR CODE HERE
+
+            if (fields.Length < 4)
+            {
+                continue;
+            }
+
+            string degree = fields[3].Trim();
+
+            if (degrees.ContainsKey(degree))
+            {
+                degrees[degree]++;
+            }
+            else
+            {
+                degrees[degree] = 1;
+            }
         }
 
         return degrees;
@@ -66,8 +116,55 @@ public static class SetsAndMaps
     /// </summary>
     public static bool IsAnagram(string word1, string word2)
     {
-        // TODO Problem 3 - ADD YOUR CODE HERE
-        return false;
+        Dictionary<char, int> counts = new Dictionary<char, int>();
+
+        int length1 = 0;
+        int length2 = 0;
+
+        foreach (char c in word1)
+        {
+            if (c == ' ')
+            {
+                continue;
+            }
+
+            length1++;
+            char key = char.ToLowerInvariant(c);
+
+            if (counts.ContainsKey(key))
+            {
+                counts[key]++;
+            }
+            else
+            {
+                counts[key] = 1;
+            }
+        }
+
+        foreach (char c in word2)
+        {
+            if (c == ' ')
+            {
+                continue;
+            }
+
+            length2++;
+            char key = char.ToLowerInvariant(c);
+
+            if (!counts.ContainsKey(key))
+            {
+                return false;
+            }
+
+            counts[key]--;
+
+            if (counts[key] == 0)
+            {
+                counts.Remove(key);
+            }
+        }
+
+        return length1 == length2 && counts.Count == 0;
     }
 
     /// <summary>
@@ -96,11 +193,31 @@ public static class SetsAndMaps
 
         var featureCollection = JsonSerializer.Deserialize<FeatureCollection>(json, options);
 
-        // TODO Problem 5:
-        // 1. Add code in FeatureCollection.cs to describe the JSON using classes and properties 
-        // on those classes so that the call to Deserialize above works properly.
-        // 2. Add code below to create a string out each place a earthquake has happened today and its magitude.
-        // 3. Return an array of these string descriptions.
-        return [];
+        var results = new List<string>();
+
+        if (featureCollection?.Features == null)
+        {
+            return results.ToArray();
+        }
+
+        foreach (var feature in featureCollection.Features)
+        {
+            if (feature?.Properties == null)
+            {
+                continue;
+            }
+
+            string place = feature.Properties.Place;
+            double? mag = feature.Properties.Mag;
+
+            if (string.IsNullOrWhiteSpace(place) || mag == null)
+            {
+                continue;
+            }
+
+            results.Add($"{place} - Mag {mag.Value.ToString(CultureInfo.InvariantCulture)}");
+        }
+
+        return results.ToArray();
     }
 }
