@@ -24,40 +24,43 @@ public static class SetsAndMaps
     /// that there were no duplicates) and therefore should not be returned.
     /// </summary>
     /// <param name="words">An array of 2-character words (lowercase, no duplicates)</param>
-    public static string[] FindPairs(string[] words)
+public static string[] FindPairs(string[] words)
+{
+    HashSet<string> seen = new HashSet<string>(StringComparer.Ordinal);
+    List<string> results = new List<string>();
+
+    foreach (string word in words)
     {
-        HashSet<string> seen = new HashSet<string>();
-        HashSet<string> pairs = new HashSet<string>();
-
-        foreach (string word in words)
+        if (string.IsNullOrWhiteSpace(word) || word.Length != 2)
         {
-            if (string.IsNullOrEmpty(word) || word.Length != 2)
-            {
-                continue;
-            }
-
-            if (word[0] == word[1])
-            {
-                seen.Add(word);
-                continue;
-            }
-
-            string reversed = $"{word[1]}{word[0]}";
-
-            if (seen.Contains(reversed))
-            {
-                string pair = string.CompareOrdinal(word, reversed) < 0
-                    ? $"{word} & {reversed}"
-                    : $"{reversed} & {word}";
-
-                pairs.Add(pair);
-            }
-
-            seen.Add(word);
+            continue;
         }
 
-        return new List<string>(pairs).ToArray();
+        if (word[0] == word[1])
+        {
+            seen.Add(word);
+            continue;
+        }
+
+        string reversed = new string(new[] { word[1], word[0] });
+
+        if (seen.Contains(reversed))
+        {
+            if (string.CompareOrdinal(word, reversed) < 0)
+            {
+                results.Add($"{word} & {reversed}");
+            }
+            else
+            {
+                results.Add($"{reversed} & {word}");
+            }
+        }
+
+        seen.Add(word);
     }
+
+    return results.ToArray();
+}
 
     /// <summary>
     /// Read a census file and summarize the degrees (education)
